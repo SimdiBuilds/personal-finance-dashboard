@@ -4,13 +4,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from csv_parser import parse_csv
+from analytics import get_summary, get_by_category, get_by_month
 
 app = FastAPI(title="Personal Finance Dashboard")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# in-memory store for the current session's transactions
 _transactions: list[dict] = []
 
 
@@ -44,3 +44,18 @@ async def upload(file: UploadFile = File(...)):
 @app.get("/transactions")
 async def transactions():
     return _transactions
+
+
+@app.get("/summary")
+async def summary():
+    return get_summary(_transactions)
+
+
+@app.get("/by-category")
+async def by_category():
+    return get_by_category(_transactions)
+
+
+@app.get("/by-month")
+async def by_month():
+    return get_by_month(_transactions)
