@@ -1,5 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -11,12 +13,19 @@ app = FastAPI(title="Personal Finance Dashboard")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+SAMPLE_CSV_PATH = Path("sample_data/transactions.csv")
+
 _transactions: list[dict] = []
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html", {})
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return Response(status_code=204)
 
 
 @app.get("/health")
@@ -36,6 +45,21 @@ async def upload(file: UploadFile = File(...)):
 
     return {
         "message": "File uploaded successfully.",
+        "rows": len(_transactions),
+        "preview": _transactions[:5],
+    }
+
+
+@app.post("/load-sample")
+async def load_sample():
+    if not SAMPLE_CSV_PATH.exists():
+        return JSONResponse(status_code=404, content={"error": "Sample data file not found on the server."})
+
+    global _transactions
+    _transactions = parse_csv(SAMPLE_CSV_PATH.read_bytes())
+
+    return {
+        "message": "Sample data loaded.",
         "rows": len(_transactions),
         "preview": _transactions[:5],
     }
