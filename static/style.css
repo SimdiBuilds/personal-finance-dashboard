@@ -1,5 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+[hidden] { display: none !important; }
+
 :root {
   --ink: #17140F;
   --ink-soft: #5C574C;
