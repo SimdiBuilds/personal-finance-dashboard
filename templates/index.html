@@ -4,53 +4,125 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Finance Dashboard</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .placeholder {
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .placeholder h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #1e293b;
-    }
-
-    .placeholder p {
-      font-size: 1rem;
-      color: #64748b;
-    }
-
-    .badge {
-      display: inline-block;
-      margin-top: 1.5rem;
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-size: 0.75rem;
-      font-weight: 500;
-      padding: 4px 12px;
-      border-radius: 99px;
-    }
-  </style>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
-  <div class="placeholder">
-    <h1>Finance Dashboard</h1>
-    <p>Server is running. Dashboard UI coming soon.</p>
-    <span class="badge">FastAPI + pandas + Chart.js</span>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">💰</span>
+        <span class="brand-name">Finance</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#" class="nav-item" id="uploadNewBtn">
+          <span class="nav-icon">📤</span> Upload New CSV
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Built by <strong>SimdiBuilds</strong></p>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- Empty state / upload zone -->
+      <section id="uploadZone" class="upload-zone">
+        <div class="upload-card">
+          <div class="upload-icon">📁</div>
+          <h1>Upload your bank statement</h1>
+          <p>Drop a CSV file here or click below to get started.</p>
+
+          <label for="fileInput" class="upload-btn" id="dropArea">
+            <span id="dropText">Drag & drop your CSV here, or click to browse</span>
+            <input type="file" id="fileInput" accept=".csv" hidden />
+          </label>
+
+          <p class="upload-hint">
+            CSV must include <code>date</code> and <code>amount</code> columns.
+            <a href="/sample_data/transactions.csv" download>Try a sample file</a>
+          </p>
+
+          <div id="uploadError" class="upload-error" hidden></div>
+        </div>
+      </section>
+
+      <!-- Loading state -->
+      <section id="loadingState" class="loading-state" hidden>
+        <div class="spinner"></div>
+        <p>Crunching your numbers...</p>
+      </section>
+
+      <!-- Dashboard content -->
+      <section id="dashboard" class="dashboard" hidden>
+
+        <header class="dashboard-header">
+          <h1>Your Financial Overview</h1>
+          <button class="secondary-btn" id="uploadAgainBtn">Upload different file</button>
+        </header>
+
+        <div class="stat-cards">
+          <div class="stat-card income">
+            <div class="stat-label">Total Income</div>
+            <div class="stat-value" id="statIncome">$0.00</div>
+          </div>
+          <div class="stat-card expense">
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-value" id="statExpenses">$0.00</div>
+          </div>
+          <div class="stat-card balance" id="balanceCard">
+            <div class="stat-label">Net Balance</div>
+            <div class="stat-value" id="statBalance">$0.00</div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h2>Spending by Category</h2>
+            <div class="chart-wrap">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h2>Monthly Income vs Expenses</h2>
+            <div class="chart-wrap">
+              <canvas id="monthChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h2>Transactions</h2>
+            <input type="text" id="searchInput" placeholder="Search transactions..." class="search-input" />
+          </div>
+          <div class="table-scroll">
+            <table id="txnTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th class="align-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="txnTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
   </div>
+
+  <script src="/static/app.js"></script>
 </body>
 </html>
