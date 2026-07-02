@@ -69,6 +69,28 @@ def test_parse_csv_invalid_file_raises():
         parse_csv(b"this is not a csv at all !!! ###")
 
 
+def test_parse_csv_accepts_alternate_headers():
+    csv = b"Transaction Date,Merchant Name,Amount\n2026-06-01,Coffee Shop,-4.50\n"
+    rows = parse_csv(csv)
+    assert len(rows) == 1
+    assert rows[0]["description"] == "Coffee Shop"
+    assert rows[0]["type"] == "expense"
+
+
+def test_parse_csv_accepts_debit_credit_split():
+    csv = (
+        b"Posted Date,Narration,Debit,Credit\n"
+        b"2026-06-01,Salary,0,3500.00\n"
+        b"2026-06-02,Groceries,65.00,0\n"
+    )
+    rows = parse_csv(csv)
+    assert len(rows) == 2
+    income_row = next(r for r in rows if r["type"] == "income")
+    expense_row = next(r for r in rows if r["type"] == "expense")
+    assert income_row["amount"] == 3500.00
+    assert expense_row["amount"] == 65.00
+
+
 # ── analytics: summary ──────────────────────────────────────────────
 
 def test_summary_totals(transactions):
