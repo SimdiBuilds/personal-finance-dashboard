@@ -3,114 +3,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finance Dashboard</title>
+  <title>Ledger — Personal Finance</title>
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 
-  <div class="layout">
+  <div class="app">
 
     <aside class="sidebar">
-      <div class="sidebar-brand">
-        <span class="brand-icon">💰</span>
-        <span class="brand-name">Finance</span>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="9" width="3" height="6" rx="0.5" fill="currentColor"/>
+            <rect x="6.5" y="5" width="3" height="10" rx="0.5" fill="currentColor"/>
+            <rect x="12" y="1" width="3" height="14" rx="0.5" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-name">Ledger</span>
       </div>
 
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active">
-          <span class="nav-icon">📊</span> Dashboard
-        </a>
-        <a href="#" class="nav-item" id="uploadNewBtn">
-          <span class="nav-icon">📤</span> Upload New CSV
-        </a>
+        <span class="nav-item active">Overview</span>
       </nav>
 
-      <div class="sidebar-footer">
-        <p>Built by <strong>SimdiBuilds</strong></p>
-      </div>
+      <div class="sidebar-foot">SimdiBuilds — personal project</div>
     </aside>
 
     <main class="main">
 
-      <!-- Empty state / upload zone -->
-      <section id="uploadZone" class="upload-zone">
+      <!-- Empty state -->
+      <section id="emptyState" class="state-panel">
         <div class="upload-card">
-          <div class="upload-icon">📁</div>
-          <h1>Upload your bank statement</h1>
-          <p>Drop a CSV file here or click below to get started.</p>
+          <p class="eyebrow">Get started</p>
+          <h1>No statement loaded</h1>
+          <p class="lede">Upload a CSV to see spending broken down by category and month.</p>
 
-          <label for="fileInput" class="upload-btn" id="dropArea">
-            <span id="dropText">Drag & drop your CSV here, or click to browse</span>
-            <input type="file" id="fileInput" accept=".csv" hidden />
+          <label class="dropzone" id="dropzoneEmpty" for="fileInputEmpty">
+            <input type="file" id="fileInputEmpty" accept=".csv" hidden />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 13V3M10 3L6.5 6.5M10 3L13.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.5 13.5V15C3.5 15.8284 4.17157 16.5 5 16.5H15C15.8284 16.5 16.5 15.8284 16.5 15V13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span>Drop a CSV here, or click to browse</span>
           </label>
 
-          <p class="upload-hint">
-            CSV must include <code>date</code> and <code>amount</code> columns.
-            <a href="/sample_data/transactions.csv" download>Try a sample file</a>
-          </p>
+          <p class="dropzone-hint">Requires <code>date</code> and <code>amount</code> columns.</p>
 
-          <div id="uploadError" class="upload-error" hidden></div>
+          <button class="btn-text" id="sampleBtnEmpty" type="button">Use sample data instead</button>
+
+          <p class="form-error" id="uploadErrorEmpty" hidden></p>
         </div>
       </section>
 
       <!-- Loading state -->
-      <section id="loadingState" class="loading-state" hidden>
-        <div class="spinner"></div>
-        <p>Crunching your numbers...</p>
+      <section id="loadingState" class="state-panel" hidden>
+        <div class="loading-inner">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Processing statement…</p>
+        </div>
       </section>
 
-      <!-- Dashboard content -->
+      <!-- Dashboard -->
       <section id="dashboard" class="dashboard" hidden>
 
-        <header class="dashboard-header">
-          <h1>Your Financial Overview</h1>
-          <button class="secondary-btn" id="uploadAgainBtn">Upload different file</button>
+        <header class="page-header">
+          <div>
+            <h1>Overview</h1>
+            <p class="page-meta" id="pageMeta"></p>
+          </div>
+          <button class="btn-outline" id="replaceDataBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 13V3M10 3L6.5 6.5M10 3L13.5 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.5 13.5V15C3.5 15.8284 4.17157 16.5 5 16.5H15C15.8284 16.5 16.5 15.8284 16.5 15V13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            Replace data
+          </button>
         </header>
 
-        <div class="stat-cards">
-          <div class="stat-card income">
-            <div class="stat-label">Total Income</div>
-            <div class="stat-value" id="statIncome">$0.00</div>
+        <div class="stat-row">
+          <div class="stat">
+            <p class="stat-label">Income</p>
+            <p class="stat-value gain" id="statIncome">—</p>
           </div>
-          <div class="stat-card expense">
-            <div class="stat-label">Total Expenses</div>
-            <div class="stat-value" id="statExpenses">$0.00</div>
+          <div class="stat">
+            <p class="stat-label">Expenses</p>
+            <p class="stat-value loss" id="statExpenses">—</p>
           </div>
-          <div class="stat-card balance" id="balanceCard">
-            <div class="stat-label">Net Balance</div>
-            <div class="stat-value" id="statBalance">$0.00</div>
-          </div>
-        </div>
-
-        <div class="charts-row">
-          <div class="chart-card">
-            <h2>Spending by Category</h2>
-            <div class="chart-wrap">
-              <canvas id="categoryChart"></canvas>
-            </div>
-          </div>
-          <div class="chart-card">
-            <h2>Monthly Income vs Expenses</h2>
-            <div class="chart-wrap">
-              <canvas id="monthChart"></canvas>
-            </div>
+          <div class="stat stat-hero" id="balanceStat">
+            <p class="stat-label">Net balance</p>
+            <p class="stat-value" id="statBalance">—</p>
           </div>
         </div>
 
-        <div class="table-card">
-          <div class="table-header">
+        <div class="panel-row">
+          <div class="panel">
+            <h2>By category</h2>
+            <div class="chart-box"><canvas id="categoryChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <h2>By month</h2>
+            <div class="chart-box"><canvas id="monthChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="panel table-panel">
+          <div class="panel-head">
             <h2>Transactions</h2>
-            <input type="text" id="searchInput" placeholder="Search transactions..." class="search-input" />
+            <div class="search-field">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+              <input type="text" id="searchInput" placeholder="Search transactions" />
+            </div>
           </div>
           <div class="table-scroll">
-            <table id="txnTable">
+            <table>
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Description</th>
                   <th>Category</th>
-                  <th class="align-right">Amount</th>
+                  <th class="num">Amount</th>
                 </tr>
               </thead>
               <tbody id="txnTableBody"></tbody>
@@ -123,6 +141,34 @@
     </main>
   </div>
 
+  <!-- Replace-data modal -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal">
+      <button class="modal-close" id="modalCloseBtn" type="button" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <p class="eyebrow">Replace data</p>
+      <h2>Upload a new statement</h2>
+      <p class="lede">This replaces the transactions currently shown.</p>
+
+      <label class="dropzone" id="dropzoneModal" for="fileInputModal">
+        <input type="file" id="fileInputModal" accept=".csv" hidden />
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M10 13V3M10 3L6.5 6.5M10 3L13.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3.5 13.5V15C3.5 15.8284 4.17157 16.5 5 16.5H15C15.8284 16.5 16.5 15.8284 16.5 15V13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Drop a CSV here, or click to browse</span>
+      </label>
+
+      <p class="dropzone-hint">Requires <code>date</code> and <code>amount</code> columns.</p>
+      <p class="form-error" id="uploadErrorModal" hidden></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
